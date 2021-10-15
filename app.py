@@ -84,4 +84,4 @@ def limit():
 
 if __name__ == '__main__':
     ts.set_token('76b081c2a64f4f213a2bbe0f15ad6966fe49ebea1237b1ac607f4ef5')
-    app.run()
+    app.run(host="0.0.0.0")
