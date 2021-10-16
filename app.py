@@ -3,6 +3,8 @@ from flask import Flask, request
 import baostock as bs
 import pandas as pd
 import tushare as ts
+import datetime
+import time
 
 app = Flask(__name__)
 
@@ -77,6 +79,8 @@ def limit():
         trade_date = request.form.get("trade_date")
     else:
         trade_date = request.args.get("trade_date")
+    date_time = datetime.datetime.strptime(trade_date, '%Y-%m-%d')
+    trade_date = date_time.strftime('%Y%m%d')
     df = pro.stk_limit(trade_date=trade_date)
     result_json = {'error_code': 0, 'data': []}
     result_json['data'] = df.to_dict(orient='records')
