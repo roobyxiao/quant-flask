@@ -18,10 +18,12 @@ def calender():
     bs.login()
     if request.method == "POST":
         start_date = request.form.get("start_date")
+        end_date = request.form.get("end_date")
     else:
         start_date = request.args.get("start_date")
+        end_date = request.form.get("end_date")
     data_list = []
-    rs = bs.query_trade_dates(start_date)
+    rs = bs.query_trade_dates(start_date, end_date)
     result_json = {'error_code': rs.error_code, 'data': []}
     while (rs.error_code == '0') & rs.next():
         # 获取一条记录，将记录合并在一起
@@ -46,6 +48,13 @@ def stock():
     result_json['data'] = result.to_dict(orient='records')
     return result_json
 
+@app.route('/ts_stock', methods=["GET", "POST"])
+def ts_stock():
+    pro = ts.pro_api()
+    df = pro.stock_basic(exchange='', list_status='', fields='ts_code,market')
+    result_json = {'error_code': 0, 'data': []}
+    result_json['data'] = df.to_dict(orient='records')
+    return result_json
 
 @app.route('/daily', methods=["GET", "POST"])
 def daily():
@@ -76,11 +85,24 @@ def limit():
     pro = ts.pro_api()
     if request.method == "POST":
         trade_date = request.form.get("trade_date")
+        ts_code = request.form.get("ts_code")
+        start_date = request.form.get("start_date")
+        end_date = request.form.get("end_date")
     else:
         trade_date = request.args.get("trade_date")
-    date_time = datetime.datetime.strptime(trade_date, '%Y-%m-%d')
-    trade_date = date_time.strftime('%Y%m%d')
-    df = pro.stk_limit(trade_date=trade_date)
+        ts_code = request.args.get("ts_code")
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+    if trade_date is not None:
+        trade_time = datetime.datetime.strptime(trade_date, '%Y-%m-%d')
+        trade_date = trade_time.strftime('%Y%m%d')
+        df = pro.stk_limit(trade_date=trade_date)
+    else:
+        start_time = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+        end_time = datetime.datetime.strptime(end_date, '%Y-%m-%d')
+        start_date = start_time.strftime('%Y%m%d')
+        end_date = end_time.strftime('%Y%m%d')
+        df = pro.stk_limit(ts_code=ts_code, start_date=start_date, end_date=end_date)
     result_json = {'error_code': 0, 'data': []}
     result_json['data'] = df.to_dict(orient='records')
     return result_json
